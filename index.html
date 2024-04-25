@@ -65,11 +65,12 @@
         // Endpoint URLs
         const addFeedbackEndpoint = 'https://feedbacknode-v1.onrender.com/feedBackroutes/add-feedback';
         const getFeedbackEndpoint = 'https://feedbacknode-v1.onrender.com/feedBackroutes/get-feedback';
+        const getFeedbackRatingEndpoint = 'https://feedbacknode-v1.onrender.com/feedBackroutes/get-feedback-rating';
 
         // Function to fetch feedbacks and display them
-        async function fetchFeedbacks() {
+        async function fetchFeedbacks(url) {
             try {
-                const response = await fetch(getFeedbackEndpoint);
+                const response = await fetch(url);
                 const data = await response.json();
 
                 // Display feedbacks in the UI
@@ -120,11 +121,13 @@
                 const data = await response.json();
                 if (!data.err) {
                     // If feedback is added successfully, fetch updated feedbacks
-                    fetchFeedbacks();
+                    fetchFeedbacks(getFeedbackEndpoint);
                     // Clear form fields
                     document.getElementById('email').value = '';
                     document.getElementById('comment').value = '';
                     document.getElementById('rating').value = '';
+                    // Show success alert
+                    alert('Feedback submitted successfully!');
                 } else {
                     console.error('Error adding feedback:', data.message);
                     // Show error popup
@@ -140,7 +143,7 @@
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
             // Fetch and display initial feedbacks
-            fetchFeedbacks();
+            fetchFeedbacks(getFeedbackEndpoint);
 
             // Add event listener to feedback form
             const feedbackForm = document.getElementById('feedbackForm');
