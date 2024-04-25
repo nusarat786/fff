@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback App</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .feedback-item {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Feedback App</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Form for adding feedback -->
+        <div id="addFeedbackForm" class="card mb-4">
+            <div class="card-header">
+                Add Feedback
+            </div>
+            <div class="card-body">
+                <form id="feedbackForm">
+                    <div class="form-group">
+                        <label for="email">Email address:</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="rating">Rating (1-5):</label>
+                        <input type="number" class="form-control" id="rating" min="1" max="5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="comment">Comment:</label>
+                        <textarea class="form-control" id="comment" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Display feedbacks -->
+        <div id="feedbacksList">
+            <!-- Feedbacks list will go here -->
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // JavaScript for handling frontend interactions
+
+        // Endpoint URLs
+        const addFeedbackEndpoint = 'https://feedbacknode-v1.onrender.com/feedBackroutes/add-feedback';
+        const getFeedbackEndpoint = 'https://feedbacknode-v1.onrender.com/feedBackroutes/get-feedback';
+
+        // Function to fetch feedbacks and display them
+        async function fetchFeedbacks() {
+            try {
+                const response = await fetch(getFeedbackEndpoint);
+                const data = await response.json();
+
+                // Display feedbacks in the UI
+                const feedbacksList = document.getElementById('feedbacksList');
+                feedbacksList.innerHTML = ''; // Clear previous feedbacks
+
+                data.feedbacks.forEach(feedback => {
+                    const feedbackItem = document.createElement('div');
+                    feedbackItem.classList.add('card', 'feedback-item');
+                    feedbackItem.innerHTML = `
+                        <div class="card-body">
+                            <h5 class="card-title">${feedback.userEmail}</h5>
+                            <p class="card-text">Rating: ${feedback.rating}</p>
+                            <p class="card-text">${feedback.comment}</p>
+                        </div>
+                    `;
+                    feedbacksList.appendChild(feedbackItem);
+                });
+            } catch (error) {
+                console.error('Error fetching feedbacks:', error);
+            }
+        }
+
+        // Function to handle form submission for adding feedback
+        async function addFeedback(event) {
+            event.preventDefault(); // Prevent form submission
+            // Get form data
+            const email = document.getElementById('email').value;
+            const comment = document.getElementById('comment').value;
+            let rating = document.getElementById('rating').value;
+
+            // Ensure rating is between 1 and 5
+            rating = Math.min(5, Math.max(1, rating));
+
+            // Send data to backend
+            try {
+                const response = await fetch(addFeedbackEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        comment,
+                        rating
+                    })
+                });
+                const data = await response.json();
+                if (!data.err) {
+                    // If feedback is added successfully, fetch updated feedbacks
+                    fetchFeedbacks();
+                    // Clear form fields
+                    document.getElementById('email').value = '';
+                    document.getElementById('comment').value = '';
+                    document.getElementById('rating').value = '';
+                } else {
+                    console.error('Error adding feedback:', data.message);
+                    // Show error popup
+                    alert('Error adding feedback: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error adding feedback:', error);
+                // Show error popup
+                alert('Error adding feedback: ' + error.message);
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fetch and display initial feedbacks
+            fetchFeedbacks();
+
+            // Add event listener to feedback form
+            const feedbackForm = document.getElementById('feedbackForm');
+            feedbackForm.addEventListener('submit', addFeedback);
+        });
+    </script>
+</body>
+</html>
