@@ -48,10 +48,32 @@
             </div>
         </div>
 
+            <!-- Rating filter dropdown and apply button -->
+        <div class="mb-4">
+            <label for="ratingFilter">Filter by Rating:</label>
+            <select class="form-control" id="ratingFilter">
+                <option value="">All Ratings</option>
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
+            </select>
+            <button id="applyFilterBtn" class="btn btn-primary mt-2">Apply Filter</button>
+        </div>
+
+
         <!-- Display feedbacks -->
         <div id="feedbacksList">
             <!-- Feedbacks list will go here -->
         </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Feedbacks Pagination">
+            <ul class="pagination justify-content-center" id="pagination">
+                <!-- Pagination buttons will be dynamically added here -->
+            </ul>
+        </nav>
     </div>
 
     <!-- Bootstrap JS -->
@@ -89,6 +111,24 @@
                     `;
                     feedbacksList.appendChild(feedbackItem);
                 });
+
+                // Add pagination buttons
+                const pagination = document.getElementById('pagination');
+                pagination.innerHTML = ''; // Clear previous pagination buttons
+
+                for (let i = 1; i <= data.totalPages; i++) {
+                    const pageItem = document.createElement('li');
+                    pageItem.classList.add('page-item');
+                    const pageLink = document.createElement('a');
+                    pageLink.classList.add('page-link');
+                    pageLink.href = '#';
+                    pageLink.textContent = i;
+                    pageLink.addEventListener('click', () => {
+                        fetchFeedbacks(`${url}?page=${i}`);
+                    });
+                    pageItem.appendChild(pageLink);
+                    pagination.appendChild(pageItem);
+                }
             } catch (error) {
                 console.error('Error fetching feedbacks:', error);
             }
@@ -149,6 +189,43 @@
             const feedbackForm = document.getElementById('feedbackForm');
             feedbackForm.addEventListener('submit', addFeedback);
         });
+
+        // Function to fetch feedbacks with rating filter and display them
+async function fetchFeedbacksWithRatingFilter(page, rating) {
+    try {
+        const response = await fetch(`${getFeedbackRatingEndpoint}?page=${page}&rating=${rating}`);
+        const data = await response.json();
+
+        // Display feedbacks with rating filter in the UI
+        const feedbacksList = document.getElementById('feedbacksList');
+        feedbacksList.innerHTML = ''; // Clear previous feedbacks
+
+        data.feedbacks.forEach(feedback => {
+            const feedbackItem = document.createElement('div');
+            feedbackItem.classList.add('card', 'feedback-item');
+            feedbackItem.innerHTML = `
+                <div class="card-body">
+                    <h5 class="card-title">${feedback.userEmail}</h5>
+                    <p class="card-text">Rating: ${feedback.rating}</p>
+                    <p class="card-text">${feedback.comment}</p>
+                </div>
+            `;
+            feedbacksList.appendChild(feedbackItem);
+        });
+
+        // Show alert with pagination info and average rating
+        alert(`Feedbacks fetched successfully:
+        Total Pages: ${data.totalPages}
+        Current Page: ${data.currentPage}
+        Total Feedbacks: ${data.totalFeedbacks}
+        Average Rating: ${data.averageRating}`);
+    } catch (error) {
+        console.error('Error fetching feedbacks:', error);
+        // Show error popup
+        alert('Error fetching feedbacks: ' + error.message);
+    }
+}
+
     </script>
 </body>
 </html>
