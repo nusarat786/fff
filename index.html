@@ -59,7 +59,7 @@
                 <option value="4">4 Stars</option>
                 <option value="5">5 Stars</option>
             </select>
-            <button id="applyFilterBtn" class="btn btn-primary mt-2">Apply Filter</button>
+            <button id="applyFilterBtn" class="btn btn-primary mt-2" onclick="applyFilter()"  >Apply Filter</button>
         </div>
 
 
@@ -225,6 +225,20 @@ async function fetchFeedbacksWithRatingFilter(page, rating) {
         alert('Error fetching feedbacks: ' + error.message);
     }
 }
+
+        // Function to apply rating filter and fetch feedbacks
+function applyFilter() {
+    const selectedRating = document.getElementById('ratingFilter').value;
+    const page = 1; // Start from the first page when applying filter
+
+    if (selectedRating !== '') {
+        fetchFeedbacksWithRatingFilter(page, selectedRating);
+    } else {
+        // If no rating is selected, fetch all feedbacks
+        fetchFeedbacks(getFeedbackEndpoint);
+    }
+}
+
 
     </script>
 </body>
